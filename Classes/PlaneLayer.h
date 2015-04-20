@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "Definitions.h"
 #include "SimpleAudioEngine.h"
+
 enum {
 	kBackground, kMiddleground, kForeground
 };
@@ -16,8 +17,8 @@ using namespace CocosDenshion;
  */
 class PlaneLayer: public cocos2d::Layer {
 public:
-	PlaneLayer();CREATE_FUNC(PlaneLayer)
-	;
+	PlaneLayer();
+	CREATE_FUNC(PlaneLayer);
 	cocos2d::Sprite* getPlane();
 	int getInitHP() const;
 	ParticleSystem * _jet1;

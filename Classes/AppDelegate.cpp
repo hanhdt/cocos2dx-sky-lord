@@ -72,6 +72,14 @@ void AppDelegate::applicationWillEnterForeground() {
 void AppDelegate::initConfigXML()
 {
 	UserDefault::getInstance()->setStringForKey("textureFileName","texture.plist");
+
+	// Preferences for Enemies objects
+	UserDefault::getInstance()->setIntegerForKey("FlytimeOfEnemy1",10);
+	UserDefault::getInstance()->setIntegerForKey("FlytimeOfEnemy2",10);
+	UserDefault::getInstance()->setIntegerForKey("FlytimeOfEnemy3",5);
+	UserDefault::getInstance()->setFloatForKey("intervalOfAddEnemy", 0.5f);
+	UserDefault::getInstance()->setFloatForKey("probabilityOfBaseEnemyAppear", 0.4f);
+	UserDefault::getInstance()->setFloatForKey("probabilityOfDeltaEnemyAppear", 0.007f);
 }
 
 

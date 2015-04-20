@@ -2,7 +2,9 @@
 #define __DEFINITIONS_H__
 
 #define TRANSITION_TIME 2.0f
+
 #define BACKGROUND_MOVE_SPEED 1
 
+#define MAX_ENEMIES 10000
 
 #endif // __DEFINITIONS_H__
