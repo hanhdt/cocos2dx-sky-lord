@@ -22,7 +22,8 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/SelectBackgroundLayer.cpp \
                    ../../Classes/SelectButtonLayer.cpp \
                    ../../Classes/GameBackgroundLayer.cpp \
-                   ../../Classes/PlaneLayer.cpp
+                   ../../Classes/PlaneLayer.cpp \
+                   ../../Classes/EnemyLayer.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 
