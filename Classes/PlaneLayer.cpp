@@ -126,3 +126,7 @@ void PlaneLayer::onTouchEnded(cocos2d::Touch *touch,
 		_jet2->stopSystem();
 	}
 }
+
+Sprite* PlaneLayer::getMyPlane() {
+	return this->_mPlane;
+}

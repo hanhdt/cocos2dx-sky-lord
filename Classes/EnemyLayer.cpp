@@ -1,4 +1,6 @@
 #include "EnemyLayer.h"
+#include "PlaneLayer.h"
+#include "GameScene.h"
 
 USING_NS_CC;
 
@@ -6,7 +8,7 @@ EnemyLayer::EnemyLayer():
 		_visibleSize(Director::getInstance()->getVisibleSize()),
 		baseEnemyAppearProbability(UserDefault::getInstance()->getFloatForKey("probabilityOfBaseEnemyAppear")),
 		deltaEnemyAppearProbability(UserDefault::getInstance()->getFloatForKey("probabilityOfDeltaEnemyAppear")),
-		nowEnemyAppearProbability(baseEnemyAppearProbability){
+		nowEnemyAppearProbability(baseEnemyAppearProbability), _actionExplosion(nullptr){
 
 }
 
@@ -15,14 +17,17 @@ EnemyLayer::~EnemyLayer()
 
 }
 
-void EnemyLayer::createPlaneParticles() {
-
+void EnemyLayer::createEnemyParticles() {
+	Animation* animationExplosion = AnimationCache::getInstance()->getAnimation("explosion");
+	animationExplosion->setRestoreOriginalFrame(false);
+	animationExplosion->setDelayPerUnit(0.5f / 9.0f);
+	_actionExplosion = Animate::create(animationExplosion);
 }
 
 bool EnemyLayer::init() {
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-	this->createPlaneParticles();
+	this->createEnemyParticles();
 
 	// setup enemies' texture name.
 	std::string name1 = "enemy1.png";
@@ -95,6 +100,38 @@ void EnemyLayer::enemyMoveFinished(Node* pSender) {
 }
 
 void EnemyLayer::update(float dt) {
+	Animation* animationExplosion = AnimationCache::getInstance()->getAnimation("explosion");
+	animationExplosion->setRestoreOriginalFrame(false);
+	animationExplosion->setDelayPerUnit(0.5f / 9.0f);
+	auto actionExplosion = Animate::create(animationExplosion);
 
+//	if (allEnemy.empty() == true) {
+//			static_cast<GameScene*>(this->getParent())->getEnemyBulletLayer()->bossStopShooting();
+//			scheduleOnce(schedule_selector(EnemyLayer::changeSceneCallBack), 1.0f);
+//	}
+
+	// traveling all enemies
+	for(Sprite* enemy: this->allEnemy)
+	{
+		FiniteTimeAction* enemyRemove = CallFuncN::create(CC_CALLBACK_1(EnemyLayer::enemyMoveFinished, this));
+		// detect collision with the plane
+		if(enemy->getBoundingBox().intersectsRect(static_cast<GameScene*>(this->getParent())->getPlaneLayer()->getMyPlane()->getBoundingBox()))
+		{
+			enemy->stopAllActions();
+//			static_cast<EnemyUserData*>(enemy->getUserData())->setIsDeleting();
+			enemy->runAction(Sequence::create(actionExplosion, enemyRemove, NULL));
+		}
+	}
+}
+
+void EnemyLayer::changeSceneCallBack(float useless) {
+	cocos2d::log("Change scene!");
+//	Scene* resultSceneWithAnimation;
+//	if((allEnemy.empty() == true) && (this->bossAppeared == true)){
+//		resultSceneWithAnimation = TransitionFade::create(TRANSITION_TIME, ResultScene::create(true, static_cast<GameScene*>(this->getParent())->getControlLayer()->getScore()));
+//	}else{
+//		resultSceneWithAnimation = TransitionFade::create(TRANSITION_TIME, ResultScene::create(false, static_cast<GameScene*>(this->getParent())->getControlLayer()->getScore()));
+//	}
+//	Director::getInstance()->replaceScene(resultSceneWithAnimation);
 }
 
