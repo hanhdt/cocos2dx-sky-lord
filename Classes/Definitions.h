@@ -7,4 +7,5 @@
 
 #define MAX_ENEMIES 10000
 
+#define ENEMY_MAX_SPEED 3
 #endif // __DEFINITIONS_H__

@@ -23,11 +23,7 @@ public:
 	int getInitHP() const;
 	ParticleSystem * _jet1;
 	ParticleSystem * _jet2;
-	ParticleSystem * _boom;
-	ParticleSystem * _comet;
-	ParticleSystem * _pickup;
 	ParticleSystem * _warp;
-	ParticleSystem * _star;
 	void createPlaneParticles();
 private:
 	const int initHP;

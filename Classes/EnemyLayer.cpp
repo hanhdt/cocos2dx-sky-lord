@@ -1,27 +1,43 @@
 #include "EnemyLayer.h"
 #include "PlaneLayer.h"
 #include "GameScene.h"
+#include "ResultScene.h"
 
 USING_NS_CC;
 
 EnemyLayer::EnemyLayer():
-		_visibleSize(Director::getInstance()->getVisibleSize()),
-		baseEnemyAppearProbability(UserDefault::getInstance()->getFloatForKey("probabilityOfBaseEnemyAppear")),
-		deltaEnemyAppearProbability(UserDefault::getInstance()->getFloatForKey("probabilityOfDeltaEnemyAppear")),
-		nowEnemyAppearProbability(baseEnemyAppearProbability), _actionExplosion(nullptr){
+		_visibleSize(Director::getInstance()->getVisibleSize()), baseEnemyAppearProbability(
+				UserDefault::getInstance()->getFloatForKey(
+						"probabilityOfBaseEnemyAppear")), deltaEnemyAppearProbability(
+				UserDefault::getInstance()->getFloatForKey(
+						"probabilityOfDeltaEnemyAppear")), nowEnemyAppearProbability(
+				baseEnemyAppearProbability), _pickup(nullptr), _star(nullptr), _comet(nullptr), _boom(nullptr){
 
 }
 
-EnemyLayer::~EnemyLayer()
-{
+EnemyLayer::~EnemyLayer() {
 
 }
 
 void EnemyLayer::createEnemyParticles() {
-	Animation* animationExplosion = AnimationCache::getInstance()->getAnimation("explosion");
-	animationExplosion->setRestoreOriginalFrame(false);
-	animationExplosion->setDelayPerUnit(0.5f / 9.0f);
-	_actionExplosion = Animate::create(animationExplosion);
+	_boom = ParticleSystemQuad::create("boom.plist");
+	_boom->stopSystem();
+	this->addChild(_boom, kForeground);
+
+	_comet = ParticleSystemQuad::create("comet.plist");
+	_comet->stopSystem();
+	_comet->setPosition(Vec2(0, _visibleSize.height * 0.6f));
+	_comet->setVisible(false);
+	this->addChild(_comet, kForeground);
+
+	_pickup = ParticleSystemQuad::create("plink.plist");
+	_pickup->stopSystem();
+	this->addChild(_pickup, kMiddleground);
+	// Particle system for the star
+	_star = ParticleSystemQuad::create("star.plist");
+	_star->stopSystem();
+	_star->setVisible(false);
+	this->addChild(_star, kBackground);
 }
 
 bool EnemyLayer::init() {
@@ -38,9 +54,12 @@ bool EnemyLayer::init() {
 	enemyTextureName.push_back(name3);
 
 	// setup enemies' fly time
-	enemyFlyTime.push_back(UserDefault::getInstance()->getIntegerForKey("FlytimeOfEnemy1"));
-	enemyFlyTime.push_back(UserDefault::getInstance()->getIntegerForKey("FlytimeOfEnemy2"));
-	enemyFlyTime.push_back(UserDefault::getInstance()->getIntegerForKey("FlytimeOfEnemy3"));
+	enemyFlyTime.push_back(
+			UserDefault::getInstance()->getIntegerForKey("FlytimeOfEnemy1"));
+	enemyFlyTime.push_back(
+			UserDefault::getInstance()->getIntegerForKey("FlytimeOfEnemy2"));
+	enemyFlyTime.push_back(
+			UserDefault::getInstance()->getIntegerForKey("FlytimeOfEnemy3"));
 
 	startAddEnemy();
 
@@ -49,46 +68,54 @@ bool EnemyLayer::init() {
 	return true;
 }
 
-void EnemyLayer::addEnemySprite(float useless)
-{
+void EnemyLayer::addEnemySprite(float useless) {
 	float experimentProbability = rand_0_1();
-	if(experimentProbability < nowEnemyAppearProbability)
-	{
+	if (experimentProbability < nowEnemyAppearProbability) {
 		int randomEnemyLevel = cocos2d::rand_0_1() * 3;
 //		cocos2d::log("generated enemy at level %i", randomEnemyLevel);
-		Sprite* enemySprite = Sprite::createWithSpriteFrameName(enemyTextureName[randomEnemyLevel].c_str());
+		Sprite* enemySprite = Sprite::createWithSpriteFrameName(
+				enemyTextureName[randomEnemyLevel].c_str());
 		int randomX = rand_0_1() * _visibleSize.width;
 		// Init position Y beyond screen height
-		float positionY = _visibleSize.height + enemySprite->getContentSize().height * 0.5f;
+		float positionY = _visibleSize.height
+				+ enemySprite->getContentSize().height * 0.5f;
+
 		enemySprite->setPosition(randomX, positionY);
+
 		this->addChild(enemySprite);
 		allEnemy.pushBack(enemySprite);
 
 		// Run moving action of enemies
 		this->movingEnemy(enemySprite, useless, randomEnemyLevel, randomX);
 	}
+
 	nowEnemyAppearProbability += deltaEnemyAppearProbability;
-	if(nowEnemyAppearProbability > 1)
-	{
+
+	if (nowEnemyAppearProbability > 1) {
 		this->stopAddEnemy();
 	}
 }
 
-void EnemyLayer::movingEnemy(Sprite* enemy, float time, float randomLevel, float randomPositionX)
-{
-	FiniteTimeAction* enemyMove = MoveTo::create(enemyFlyTime[randomLevel], Vec2(randomPositionX, - enemy->getContentSize().height * 0.5f));
-	FiniteTimeAction* enemyRemove = CallFuncN::create(CC_CALLBACK_1(EnemyLayer::enemyMoveFinished, this));
+void EnemyLayer::movingEnemy(Sprite* enemy, float time, float randomLevel,
+		float randomPositionX) {
+	FiniteTimeAction* enemyMove = MoveTo::create(enemyFlyTime[randomLevel],
+			Vec2(randomPositionX, -enemy->getContentSize().height * 0.5f));
+
+	FiniteTimeAction* enemyRemove = CallFuncN::create(
+			CC_CALLBACK_1(EnemyLayer::enemyMoveFinished, this));
+
 	Action* enemyAction = Sequence::create(enemyMove, enemyRemove, NULL);
+
 	enemy->runAction(enemyAction);
+
 }
 
-void EnemyLayer::startAddEnemy()
-{
-	this->schedule(schedule_selector(EnemyLayer::addEnemySprite), UserDefault::getInstance()->getFloatForKey("intervalOfAddEnemy"));
+void EnemyLayer::startAddEnemy() {
+	this->schedule(schedule_selector(EnemyLayer::addEnemySprite),
+			UserDefault::getInstance()->getFloatForKey("intervalOfAddEnemy"));
 }
 
-void EnemyLayer::stopAddEnemy()
-{
+void EnemyLayer::stopAddEnemy() {
 	this->unschedule(schedule_selector(EnemyLayer::addEnemySprite));
 }
 
@@ -100,26 +127,32 @@ void EnemyLayer::enemyMoveFinished(Node* pSender) {
 }
 
 void EnemyLayer::update(float dt) {
-	Animation* animationExplosion = AnimationCache::getInstance()->getAnimation("explosion");
-	animationExplosion->setRestoreOriginalFrame(false);
-	animationExplosion->setDelayPerUnit(0.5f / 9.0f);
-	auto actionExplosion = Animate::create(animationExplosion);
+
+	//	SteeringOutput steering;
+	//	steering.setLinear(Vec2(rand_0_1(),rand_0_1() * 2));
+	//	steering.setAngular(rand_0_1());
 
 //	if (allEnemy.empty() == true) {
 //			static_cast<GameScene*>(this->getParent())->getEnemyBulletLayer()->bossStopShooting();
 //			scheduleOnce(schedule_selector(EnemyLayer::changeSceneCallBack), 1.0f);
 //	}
-
 	// traveling all enemies
-	for(Sprite* enemy: this->allEnemy)
-	{
-		FiniteTimeAction* enemyRemove = CallFuncN::create(CC_CALLBACK_1(EnemyLayer::enemyMoveFinished, this));
-		// detect collision with the plane
-		if(enemy->getBoundingBox().intersectsRect(static_cast<GameScene*>(this->getParent())->getPlaneLayer()->getMyPlane()->getBoundingBox()))
-		{
+	for (Sprite* enemy : this->allEnemy) {
+		FiniteTimeAction* enemyRemove = CallFuncN::create(
+				CC_CALLBACK_1(EnemyLayer::enemyMoveFinished, this));
+//		 detect collision with the plane
+		if (enemy->getBoundingBox().intersectsRect(
+				static_cast<GameScene*>(this->getParent())->getPlaneLayer()->getMyPlane()->getBoundingBox())) {
+//			cocos2d::log("enemy %i collision with plane", enemy->_ID);
+
 			enemy->stopAllActions();
 //			static_cast<EnemyUserData*>(enemy->getUserData())->setIsDeleting();
-			enemy->runAction(Sequence::create(actionExplosion, enemyRemove, NULL));
+			if(!_boom->isActive())
+			{
+				_boom->resetSystem();
+			}
+			_boom->setPosition(enemy->getPosition());
+			enemy->runAction(Sequence::create(enemyRemove, NULL));
 		}
 	}
 }

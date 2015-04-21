@@ -3,13 +3,54 @@
 
 #include "cocos2d.h"
 #include "Definitions.h"
-#include "SimpleAudioEngine.h"
 #include <string>
 #include <vector>
 
 USING_NS_CC;
-using namespace CocosDenshion;
 
+
+
+struct SteeringOutput{
+	Vec2 linear;
+	float angular;
+
+	SteeringOutput(): linear(Vec2::ZERO), angular(0.0f){}
+	Vec2 getLinear()
+	{
+		return linear;
+	}
+	void setLinear(Vec2 iLinear){ linear = iLinear;}
+	float getAngular(){ return angular; }
+	void setAngular(float iAngular){ angular = iAngular;}
+};
+
+struct KinematicSteeringOutput{
+	Vec2 velocity;
+	float rotation;
+};
+
+struct Kinematic{
+	Vec2 position;
+	float orientation;
+	Vec2 velocity;
+	float rotation;
+
+	Kinematic(): position(Vec2::ZERO),
+			orientation(0.0f), velocity(Vec2::ZERO), rotation(0.0f){}
+
+	void update(SteeringOutput steering, float time)
+	{
+		position.x += velocity.x * time;
+		position.y += velocity.y * time;
+		orientation += rotation * time;
+
+		velocity.x += steering.linear.x * time;
+		orientation += steering.angular * time;
+	}
+
+	Vec2 getPosition(){ return position; }
+	void setPosition(Vec2 iPosition) { position = iPosition;}
+};
 /**
  *  Loading the enemies, and also, providing the interface of the crash detecting.
  */
@@ -20,7 +61,10 @@ public:
 	CREATE_FUNC(EnemyLayer);
 	cocos2d::Sprite* getBossSprite();
 	void createEnemyParticles();
-	cocos2d::Animate* _actionExplosion;
+	ParticleSystem * _boom;
+	ParticleSystem * _comet;
+	ParticleSystem * _pickup;
+	ParticleSystem * _star;
 
 private:
 	const float  baseEnemyAppearProbability;

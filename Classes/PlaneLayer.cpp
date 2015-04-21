@@ -4,7 +4,7 @@ USING_NS_CC;
 
 PlaneLayer::PlaneLayer() :
 		initHP(1000), _mPlane(nullptr), _visibleSize(
-				Director::getInstance()->getVisibleSize()){
+				Director::getInstance()->getVisibleSize()), _jet1(nullptr), _jet2(nullptr), _warp(nullptr){
 }
 
 void PlaneLayer::createPlaneParticles() {
@@ -21,30 +21,10 @@ void PlaneLayer::createPlaneParticles() {
 	_jet2->setSourcePosition(Vec2((_mPlane->getBoundingBox().size.width * 0.5f) * 0.8f,0));
 	this->addChild(_jet2, kBackground);
 
-	_boom = ParticleSystemQuad::create("boom.plist");
-	_boom->stopSystem();
-	this->addChild(_boom, kForeground);
-
-	_comet = ParticleSystemQuad::create("comet.plist");
-	_comet->stopSystem();
-	_comet->setPosition(Vec2(0, _visibleSize.height * 0.6f));
-	_comet->setVisible(false);
-	this->addChild(_comet, kForeground);
-
-	_pickup = ParticleSystemQuad::create("plink.plist");
-	_pickup->stopSystem();
-	this->addChild(_pickup, kMiddleground);
-
 	// Warm-up starting position
 	_warp = ParticleSystemQuad::create("warp.plist");
 	_warp->setPosition(_mPlane->getPosition());
 	this->addChild(_warp, kBackground);
-
-	// Particle system for the star
-	_star = ParticleSystemQuad::create("star.plist");
-	_star->stopSystem();
-	_star->setVisible(false);
-	this->addChild(_star, kBackground);
 }
 
 bool PlaneLayer::init() {
